@@ -1,158 +1,153 @@
 # Nova Salud - Sistema de Gestión de Farmacia
 
-## Descripción del Proyecto
-Nova Salud es un sistema integral de gestión para farmacias que permite administrar el inventario, ventas, clientes y proveedores de manera eficiente. El sistema está diseñado para optimizar las operaciones diarias de una farmacia, incluyendo el control de stock, seguimiento de ventas y gestión de usuarios con diferentes niveles de acceso.
+## Descripción
+Sistema de gestión integral para la farmacia Nova Salud, que permite administrar inventario, ventas, clientes y usuarios.
 
-## Arquitectura del Sistema
-
-```
-┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
-│    Frontend     │     │   Backend    │     │  Database   │
-│    (React)      │────▶│   (Node.js)  │────▶│   (MySQL)   │
-└─────────────────┘     └──────────────┘     └─────────────┘
-       ▲                       ▲                    ▲
-       │                       │                    │
-       │                       │                    │
-┌──────┴──────────────────────┴────────────────────┴───────┐
-│                    Características                        │
-│ • Autenticación JWT                                      │
-│ • API RESTful                                            │
-│ • Arquitectura MVC                                       │
-│ • Gestión de Estado Centralizado                         │
-└──────────────────────────────────────────────────────────┘
-```
+## Enlaces de Producción
+- Frontend: https://proyectofinal-snowy.vercel.app
+- Backend: https://novasalud.onrender.com
 
 ## Tecnologías Utilizadas
 
 ### Frontend
-- React 18.2.0
-- Material-UI 5.x
-- React Router 6.x
-- Axios 1.x
-- Recharts 2.x
-- Vite 4.x
+- React 18.x
+- Vite
+- Material-UI (MUI)
+- Axios
+- React Router DOM
+- Formik & Yup
+- Context API para manejo de estado
 
 ### Backend
 - Node.js 18.x
 - Express 4.x
-- MySQL 8.0
+- MySQL 8.0 (Railway)
 - Sequelize 6.x
-- JWT 9.x
-- Winston 3.x
-- Bcrypt 5.x
+- JWT para autenticación
+- bcryptjs para encriptación
+- Winston para logging
 
-## Requisitos Previos
-- Node.js 18.0.0 o superior
-- MySQL 8.0 o superior
-- npm 9.x o superior
-- Git
-
-## Instalación y Configuración
-
-### 1. Clonar el Repositorio
-```bash
-git clone <repositorio>
-cd nova-salud
+## Estructura del Proyecto
+```
+nova-salud/
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # Componentes reutilizables
+│   │   ├── context/      # Contextos de React (Auth, etc.)
+│   │   ├── hooks/        # Custom hooks
+│   │   ├── layouts/      # Layouts de la aplicación
+│   │   ├── pages/        # Páginas/Vistas
+│   │   ├── services/     # Servicios de API
+│   │   └── utils/        # Utilidades
+│   └── package.json
+├── backend/
+│   ├── src/
+│   │   ├── config/       # Configuraciones
+│   │   ├── controllers/  # Controladores
+│   │   ├── middleware/   # Middlewares
+│   │   ├── models/       # Modelos Sequelize
+│   │   ├── routes/       # Rutas de la API
+│   │   └── app.js        # Entrada principal
+│   └── package.json
+└── database/
+    └── script.sql        # Script de inicialización
 ```
 
-### 2. Configuración de la Base de Datos
-1. Crear una base de datos MySQL:
-```sql
-CREATE DATABASE nova_salud;
-```
+## Características Principales
 
-2. Ejecutar el script de inicialización:
-```bash
-mysql -u root -p nova_salud < database/script.sql
-```
-
-### 3. Configuración del Backend
-1. Instalar dependencias:
-```bash
-cd backend
-npm install
-```
-
-2. Crear archivo `.env`:
-```env
-PORT=3000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=nova_salud
-JWT_SECRET=novasalud123456
-JWT_EXPIRES_IN=24h
-```
-
-### 4. Configuración del Frontend
-```bash
-cd ../frontend
-npm install
-```
-
-## Iniciar el Proyecto
-
-### Ambiente de Desarrollo
-1. Iniciar el backend:
-```bash
-cd backend
-npm run dev
-```
-
-2. Iniciar el frontend:
-```bash
-cd frontend
-npm run dev
-```
-
-### Ambiente de Producción
-1. Construir el frontend:
-```bash
-cd frontend
-npm run build
-```
-
-2. Iniciar el backend en producción:
-```bash
-cd backend
-npm start
-```
-
-## Funcionalidades Principales
-
-### 1. Gestión de Productos
-- Inventario en tiempo real
-- Control de stock mínimo
-- Registro de fechas de vencimiento
-- Categorización de productos
-
-### 2. Sistema de Ventas
-- Registro de ventas
-- Facturación
-- Control de pagos
-- Historial de transacciones
-
-### 3. Gestión de Usuarios
+### Gestión de Usuarios
 - Roles: Administrador y Vendedor
-- Permisos diferenciados
-- Registro de actividades
+- Autenticación JWT
+- Refresh tokens
+- Perfiles de usuario
 
-### 4. Reportes y Estadísticas
-- Dashboard con métricas clave
-- Reportes de ventas
-- Control de inventario
+### Gestión de Inventario
+- CRUD de productos
+- Control de stock
 - Alertas de stock bajo
+- Categorización de productos
+- Gestión de proveedores
+
+### Sistema de Ventas
+- Registro de ventas
+- Múltiples métodos de pago
+- Historial de transacciones
+- Gestión de clientes
+
+### Seguridad
+- Autenticación JWT
+- Contraseñas hasheadas
+- Protección CORS
+- Validación de datos
+- Manejo de roles y permisos
+
+## Configuración del Proyecto
+
+### Variables de Entorno
+
+#### Backend (.env)
+```env
+NODE_ENV=production
+PORT=4000
+DB_HOST=your-railway-host
+DB_USER=your-railway-user
+DB_PASSWORD=your-railway-password
+DB_NAME=your-railway-database
+DB_PORT=your-railway-port
+JWT_SECRET=your-secret
+JWT_EXPIRES_IN=24h
+CORS_ORIGINS=https://proyectofinal-snowy.vercel.app
+```
+
+#### Frontend (.env)
+```env
+VITE_API_URL=https://novasalud.onrender.com/api
+```
+
+## Despliegue
+
+### Frontend (Vercel)
+1. Conectar con repositorio de GitHub
+2. Framework Preset: Vite
+3. Root Directory: ./frontend
+4. Build Command: npm run build
+5. Output Directory: dist
+6. Configurar variables de entorno:
+   - VITE_API_URL=https://novasalud.onrender.com/api
+
+### Backend (Render)
+1. Conectar con repositorio de GitHub
+2. Runtime: Node.js
+3. Build Command: npm install
+4. Start Command: npm start
+5. Configurar variables de entorno según .env
+6. Habilitar Auto-Deploy
+
+### Base de Datos (Railway)
+- MySQL 8.0
+- Configuración SSL habilitada
+- Conexión segura mediante variables de entorno
+
+## Acceso al Sistema
+
+### Credenciales por Defecto
+
+#### Administrador
+- Email: admin@novasalud.com
+- Contraseña: Admin123!
 
 ## API Endpoints
 
 ### Autenticación
 - POST /api/auth/login
-```json
-{
-  "email": "usuario@ejemplo.com",
-  "password": "contraseña"
-}
-```
+- POST /api/auth/refresh-token
+- GET /api/auth/perfil
+
+### Usuarios
+- GET /api/usuarios
+- POST /api/usuarios
+- PUT /api/usuarios/:id
+- DELETE /api/usuarios/:id
 
 ### Productos
 - GET /api/productos
@@ -166,57 +161,21 @@ npm start
 - GET /api/ventas/:id
 - PATCH /api/ventas/:id/estado
 
-## Seguridad Implementada
+## Mantenimiento
 
-### Autenticación
-- JWT (JSON Web Tokens)
-- Contraseñas hasheadas con bcrypt
-- Tokens de acceso con expiración
+### Logs
+- Error logs: /backend/logs/error.log
+- Combined logs: /backend/logs/combined.log
 
-### Autorización
-- Middleware de verificación de roles
-- Protección de rutas sensibles
-- Validación de permisos por endpoint
+### Backups
+- Se recomienda backup diario de la base de datos
+- Exportar datos usando mysqldump
 
-### Datos
-- Sanitización de entradas
-- Validación de datos
-- Protección contra SQL Injection
-- CORS configurado
+## Soporte
 
-## Acceso al Sistema
+Para soporte y consultas:
+- Crear un issue en el repositorio
+- Contactar al equipo de desarrollo
 
-### Usuarios por Defecto
-
-#### Administrador
-- Email: admin@novasalud.com
-- Contraseña: admin123
-
-#### Vendedor
-- Email: vendedor@novasalud.com
-- Contraseña: admin123
-
-## Estructura del Proyecto
-```
-nova-salud/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── app.js
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── layouts/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── utils/
-│   └── package.json
-└── database/
-    └── script.sql 
+## Licencia
+ISC
