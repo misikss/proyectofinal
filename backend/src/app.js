@@ -47,22 +47,31 @@ const app = express();
 
 // Configurar CORS
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? (process.env.CORS_ORIGINS || 'https://proyectofinal-snowy.vercel.app,https://proyectofinal-git-main-misikss.vercel.app').split(',')
+  ? (process.env.CORS_ORIGINS || 'https://proyectofinal-snowy.vercel.app').split(',')
   : ['http://localhost:5173'];
 
+// Middleware para CORS preflight
+app.options('*', cors());
+
+// Configurar CORS
 app.use(cors({
   origin: function(origin, callback) {
-    // Permitir solicitudes sin origen (como aplicaciones móviles o Postman)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error('No permitido por CORS'), false);
+    // Permitir solicitudes sin origen (como Postman)
+    if (!origin) {
+      return callback(null, true);
     }
-    return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600 // Caché de preflight por 10 minutos
 }));
 
 // Middleware para parsear JSON y URL-encoded
@@ -72,6 +81,15 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware global para logging
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Middleware para establecer headers CORS en todas las respuestas
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
 });
 
