@@ -591,3 +591,23 @@
 {"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:19:20.177Z"}
 {"level":"info","message":"Modelos sincronizados con la base de datos.","timestamp":"2025-05-06T10:19:20.415Z"}
 {"level":"info","message":"Servidor corriendo en el puerto 4000","timestamp":"2025-05-06T10:19:20.420Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:22:42.806Z"}
+{"level":"info","message":"Conexión a la base de datos establecida correctamente.","timestamp":"2025-05-06T10:22:43.059Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:22:43.061Z"}
+{"level":"info","message":"Modelos sincronizados con la base de datos.","timestamp":"2025-05-06T10:22:43.276Z"}
+{"level":"info","message":"Servidor corriendo en el puerto 4000","timestamp":"2025-05-06T10:22:43.280Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:23.229Z"}
+{"level":"info","message":"Conexión a la base de datos establecida correctamente.","timestamp":"2025-05-06T10:23:23.525Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:23.556Z"}
+{"level":"info","message":"Modelos sincronizados con la base de datos.","timestamp":"2025-05-06T10:23:23.771Z"}
+{"level":"info","message":"Servidor corriendo en el puerto 4000","timestamp":"2025-05-06T10:23:23.796Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:36.686Z"}
+{"level":"info","message":"Conexión a la base de datos establecida correctamente.","timestamp":"2025-05-06T10:23:36.924Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:36.927Z"}
+{"level":"info","message":"Modelos sincronizados con la base de datos.","timestamp":"2025-05-06T10:23:37.143Z"}
+{"level":"info","message":"Servidor corriendo en el puerto 4000","timestamp":"2025-05-06T10:23:37.149Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:54.010Z"}
+{"level":"info","message":"Conexión a la base de datos establecida correctamente.","timestamp":"2025-05-06T10:23:54.253Z"}
+{"level":"debug","message":"Executing (default): SELECT 1+1 AS result","timestamp":"2025-05-06T10:23:54.256Z"}
+{"level":"info","message":"Modelos sincronizados con la base de datos.","timestamp":"2025-05-06T10:23:54.534Z"}
+{"level":"info","message":"Servidor corriendo en el puerto 4000","timestamp":"2025-05-06T10:23:54.540Z"}

@@ -1,5 +1,5 @@
 const { Usuario } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Obtener todos los usuarios
 const obtenerUsuarios = async (req, res) => {
@@ -107,7 +107,7 @@ const actualizarUsuario = async (req, res) => {
   }
 };
 
-// Eliminar un usuario (desactivar)
+// Eliminar usuario
 const eliminarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,10 +117,10 @@ const eliminarUsuario = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
     
-    // Desactivar usuario en lugar de eliminarlo
+    // Eliminación lógica
     await usuario.update({ activo: false });
     
-    res.json({ mensaje: 'Usuario desactivado correctamente' });
+    res.json({ mensaje: 'Usuario eliminado correctamente' });
   } catch (error) {
     console.error('Error al eliminar usuario:', error);
     res.status(500).json({ mensaje: 'Error en el servidor' });
