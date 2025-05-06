@@ -34,7 +34,7 @@ const sequelize = new Sequelize(
     dialect: 'mysql',
     logging: (msg) => logger.debug(msg),
     pool: {
-      max: 5,
+      max: 10,
       min: 0,
       acquire: 30000,
       idle: 10000
@@ -45,8 +45,27 @@ const sequelize = new Sequelize(
 // Inicializar app
 const app = express();
 
-// Configurar middleware básico
-app.use(cors());
+// Configurar CORS
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? (process.env.CORS_ORIGINS || 'https://proyectofinal-misikss.vercel.app,https://proyectofinal-git-main-misikss.vercel.app').split(',')
+  : ['http://localhost:5173'];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Permitir solicitudes sin origen (como aplicaciones móviles o Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('No permitido por CORS'), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Middleware para parsear JSON y URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -68,6 +87,14 @@ app.use('/api', routes);
 // Ruta principal
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API de Nova Salud funcionando correctamente' });
+});
+
+// Health check endpoint para Render
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Middleware para manejo de errores
