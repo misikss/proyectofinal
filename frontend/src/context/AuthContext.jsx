@@ -1,7 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:4000/api';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -25,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     
     if (token) {
       // Configurar el token en los headers de axios
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Obtener perfil del usuario
       fetchUserProfile();
@@ -36,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/perfil`);
+      const response = await api.get('/auth/perfil');
       setUser(response.data);
       setLoading(false);
     } catch (error) {
@@ -61,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No hay refresh token');
       }
       
-      const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+      const response = await api.post('/auth/refresh-token', {
         refreshToken
       });
       
@@ -72,7 +70,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refreshToken', newRefreshToken);
       
       // Actualizar header de axios
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       
       // Obtener perfil nuevamente
       fetchUserProfile();
@@ -89,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const response = await api.post('/auth/login', {
         email,
         password
       });
@@ -101,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refreshToken', refreshToken);
       
       // Configurar axios
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       
       // Actualizar estado
       setUser(usuario);
@@ -125,7 +123,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refreshToken');
     
     // Eliminar header de axios
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
     
     // Actualizar estado
     setUser(null);

@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = import.meta.env.MODE === 'production' 
+  ? 'https://novasalud.onrender.com/api'
+  : 'http://localhost:4000/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -33,7 +35,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // Si el error es 401 (Unauthorized) y no es un retry
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
       try {

@@ -25,4 +25,4 @@ services:
       - key: JWT_EXPIRES_IN
         value: 24h
       - key: CORS_ORIGINS
-        value: https://proyectofinal-misikss.vercel.app,https://proyectofinal-git-main-misikss.vercel.app 
+        value: https://proyectofinal-snowy.vercel.app,https://proyectofinal-git-main-misikss.vercel.app 

@@ -47,7 +47,7 @@ const app = express();
 
 // Configurar CORS
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? (process.env.CORS_ORIGINS || 'https://proyectofinal-misikss.vercel.app,https://proyectofinal-git-main-misikss.vercel.app').split(',')
+  ? (process.env.CORS_ORIGINS || 'https://proyectofinal-snowy.vercel.app,https://proyectofinal-git-main-misikss.vercel.app').split(',')
   : ['http://localhost:5173'];
 
 app.use(cors({
