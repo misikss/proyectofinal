@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 
 const NuevaVenta = () => {
   const navigate = useNavigate();
@@ -38,19 +38,11 @@ const NuevaVenta = () => {
   const cargarDatos = async () => {
     try {
       const [clientesRes, productosRes] = await Promise.all([
-        axios.get('http://localhost:4000/api/clientes', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        axios.get('http://localhost:4000/api/productos', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
+        api.get('/clientes'),
+        api.get('/productos')
       ]);
 
-      console.log('Productos cargados:', productosRes.data);
-      
       const productosActivos = productosRes.data.filter(p => p.activo && p.stock_actual > 0);
-      console.log('Productos filtrados:', productosActivos);
-
       setClientes(clientesRes.data);
       setProductos(productosActivos);
     } catch (error) {
@@ -66,21 +58,24 @@ const NuevaVenta = () => {
     }
 
     if (cantidad > productoSeleccionado.stock_actual) {
-      setError('La cantidad supera el stock disponible');
+      setError('La cantidad excede el stock disponible');
       return;
     }
 
-    const precio = parseFloat(productoSeleccionado.precio_venta) || 0;
-    const subtotal = precio * cantidad;
-
     const itemExistente = items.find(item => item.productoId === productoSeleccionado.id);
     if (itemExistente) {
-      setItems(items.map(item => 
+      const nuevaCantidad = itemExistente.cantidad + cantidad;
+      if (nuevaCantidad > productoSeleccionado.stock_actual) {
+        setError('La cantidad total excede el stock disponible');
+        return;
+      }
+      
+      setItems(items.map(item =>
         item.productoId === productoSeleccionado.id
-          ? { 
-              ...item, 
-              cantidad: item.cantidad + cantidad,
-              subtotal: (item.cantidad + cantidad) * precio
+          ? {
+              ...item,
+              cantidad: nuevaCantidad,
+              subtotal: nuevaCantidad * productoSeleccionado.precio_venta
             }
           : item
       ));
@@ -88,9 +83,9 @@ const NuevaVenta = () => {
       setItems([...items, {
         productoId: productoSeleccionado.id,
         nombre: productoSeleccionado.nombre,
-        precio: precio,
-        cantidad,
-        subtotal: subtotal
+        cantidad: cantidad,
+        precio: productoSeleccionado.precio_venta,
+        subtotal: cantidad * productoSeleccionado.precio_venta
       }]);
     }
 
@@ -99,32 +94,32 @@ const NuevaVenta = () => {
     setError('');
   };
 
-  const eliminarItem = (index) => {
-    setItems(items.filter((_, i) => i !== index));
+  const eliminarItem = (productoId) => {
+    setItems(items.filter(item => item.productoId !== productoId));
   };
 
   const calcularTotal = () => {
-    return items.reduce((total, item) => total + (parseFloat(item.subtotal) || 0), 0);
+    return items.reduce((total, item) => total + item.subtotal, 0);
   };
 
-  const guardarVenta = async () => {
+  const handleSubmit = async () => {
     if (!clienteSeleccionado) {
-      setError('Seleccione un cliente');
+      setError('Debe seleccionar un cliente');
       return;
     }
 
     if (items.length === 0) {
-      setError('Agregue al menos un producto');
+      setError('Debe agregar al menos un producto');
       return;
     }
 
     try {
       const total = calcularTotal();
-      const subtotal = total; // En este caso el subtotal es igual al total ya que no manejamos impuestos ni descuentos
+      const subtotal = total;
       
-      await axios.post('http://localhost:4000/api/ventas', {
+      await api.post('/ventas', {
         id_cliente: clienteSeleccionado.id,
-        metodo_pago: 'Efectivo', // Valor por defecto
+        metodo_pago: 'Efectivo',
         detalles: items.map(item => ({
           id_producto: item.productoId,
           cantidad: item.cantidad,
@@ -132,11 +127,9 @@ const NuevaVenta = () => {
           subtotal: item.subtotal
         })),
         subtotal: subtotal,
-        impuestos: 0, // Por ahora no manejamos impuestos
-        descuento: 0, // Por ahora no manejamos descuentos
+        impuestos: 0,
+        descuento: 0,
         total: total
-      }, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
 
       navigate('/ventas');
@@ -176,11 +169,11 @@ const NuevaVenta = () => {
         </Paper>
 
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Autocomplete
                 options={productos}
-                getOptionLabel={(producto) => `${producto.nombre} - Stock: ${producto.stock_actual}`}
+                getOptionLabel={(producto) => producto.nombre}
                 value={productoSeleccionado}
                 onChange={(_, newValue) => setProductoSeleccionado(newValue)}
                 renderInput={(params) => (
@@ -194,15 +187,17 @@ const NuevaVenta = () => {
                 label="Cantidad"
                 value={cantidad}
                 onChange={(e) => setCantidad(parseInt(e.target.value) || 0)}
-                inputProps={{ min: 1 }}
                 fullWidth
+                inputProps={{ min: 1 }}
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <Button
                 variant="contained"
+                color="primary"
                 onClick={agregarItem}
                 fullWidth
+                sx={{ height: '100%' }}
               >
                 Agregar
               </Button>
@@ -215,31 +210,24 @@ const NuevaVenta = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Producto</TableCell>
-                <TableCell align="right">Precio</TableCell>
                 <TableCell align="right">Cantidad</TableCell>
+                <TableCell align="right">Precio</TableCell>
                 <TableCell align="right">Subtotal</TableCell>
-                <TableCell align="center">Acciones</TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((item, index) => (
-                <TableRow key={index}>
+              {items.map((item) => (
+                <TableRow key={item.productoId}>
                   <TableCell>{item.nombre}</TableCell>
-                  <TableCell align="right">
-                    {new Intl.NumberFormat('es-CL', {
-                      style: 'currency',
-                      currency: 'CLP'
-                    }).format(parseFloat(item.precio) || 0)}
-                  </TableCell>
                   <TableCell align="right">{item.cantidad}</TableCell>
+                  <TableCell align="right">S/ {item.precio.toFixed(2)}</TableCell>
+                  <TableCell align="right">S/ {item.subtotal.toFixed(2)}</TableCell>
                   <TableCell align="right">
-                    {new Intl.NumberFormat('es-CL', {
-                      style: 'currency',
-                      currency: 'CLP'
-                    }).format(parseFloat(item.subtotal) || 0)}
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton onClick={() => eliminarItem(index)} color="error">
+                    <IconButton
+                      color="error"
+                      onClick={() => eliminarItem(item.productoId)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -247,36 +235,25 @@ const NuevaVenta = () => {
               ))}
               <TableRow>
                 <TableCell colSpan={3} align="right">
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Total:
-                  </Typography>
+                  <strong>Total:</strong>
                 </TableCell>
-                <TableCell align="right" colSpan={2}>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {new Intl.NumberFormat('es-CL', {
-                      style: 'currency',
-                      currency: 'CLP'
-                    }).format(calcularTotal())}
-                  </Typography>
+                <TableCell align="right">
+                  <strong>S/ {calcularTotal().toFixed(2)}</strong>
                 </TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
 
-        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/ventas')}
-          >
-            Cancelar
-          </Button>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
-            onClick={guardarVenta}
+            color="primary"
+            onClick={handleSubmit}
             disabled={items.length === 0 || !clienteSeleccionado}
           >
-            Guardar Venta
+            Registrar Venta
           </Button>
         </Box>
       </Box>

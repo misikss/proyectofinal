@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.MODE === 'production' 
-  ? 'https://novasalud.onrender.com/api'
-  : 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://novasalud.onrender.com/api';
 
 // Crear instancia de axios
 const api = axios.create({

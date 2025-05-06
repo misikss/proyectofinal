@@ -30,7 +30,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../services/api';
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -54,9 +54,7 @@ const Clientes = () => {
 
   const cargarClientes = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/clientes', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await api.get('/clientes');
       setClientes(response.data);
       setLoading(false);
     } catch (error) {
@@ -118,7 +116,6 @@ const Clientes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validar campos requeridos
     if (!formData.nombre.trim()) {
       setError('El nombre es requerido');
       return;
@@ -131,13 +128,9 @@ const Clientes = () => {
 
     try {
       if (editando) {
-        await axios.put(`http://localhost:4000/api/clientes/${editando}`, formData, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.put(`/clientes/${editando}`, formData);
       } else {
-        await axios.post('http://localhost:4000/api/clientes', formData, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.post('/clientes', formData);
       }
       handleCloseDialog();
       cargarClientes();
@@ -151,9 +144,7 @@ const Clientes = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Está seguro de que desea eliminar este cliente?')) {
       try {
-        await axios.delete(`http://localhost:4000/api/clientes/${id}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.delete(`/clientes/${id}`);
         cargarClientes();
       } catch (error) {
         console.error('Error al eliminar cliente:', error);
@@ -202,41 +193,33 @@ const Clientes = () => {
                 <TableCell>Teléfono</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Dirección</TableCell>
-                <TableCell align="center">Acciones</TableCell>
+                <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {clientes.length > 0 ? (
-                clientes.map((cliente) => (
-                  <TableRow key={cliente.id}>
-                    <TableCell>{`${cliente.nombre} ${cliente.apellido || ''}`}</TableCell>
-                    <TableCell>{`${cliente.tipo_documento}: ${cliente.documento}`}</TableCell>
-                    <TableCell>{cliente.telefono}</TableCell>
-                    <TableCell>{cliente.email}</TableCell>
-                    <TableCell>{cliente.direccion}</TableCell>
-                    <TableCell align="center">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleOpenDialog(cliente)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(cliente.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No hay clientes registrados
+              {clientes.map((cliente) => (
+                <TableRow key={cliente.id}>
+                  <TableCell>{`${cliente.nombre} ${cliente.apellido || ''}`}</TableCell>
+                  <TableCell>{`${cliente.tipo_documento}: ${cliente.documento}`}</TableCell>
+                  <TableCell>{cliente.telefono || '-'}</TableCell>
+                  <TableCell>{cliente.email || '-'}</TableCell>
+                  <TableCell>{cliente.direccion || '-'}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleOpenDialog(cliente)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(cliente.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
@@ -246,7 +229,7 @@ const Clientes = () => {
             {editando ? 'Editar Cliente' : 'Nuevo Cliente'}
           </DialogTitle>
           <DialogContent>
-            <Box component="form" noValidate sx={{ mt: 2 }} onSubmit={handleSubmit}>
+            <Box component="form" noValidate sx={{ mt: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -276,9 +259,10 @@ const Clientes = () => {
                       onChange={handleInputChange}
                       label="Tipo de Documento"
                     >
-                      <MenuItem value="RUT">RUT</MenuItem>
-                      <MenuItem value="PASAPORTE">Pasaporte</MenuItem>
                       <MenuItem value="DNI">DNI</MenuItem>
+                      <MenuItem value="RUC">RUC</MenuItem>
+                      <MenuItem value="CE">CE</MenuItem>
+                      <MenuItem value="Pasaporte">Pasaporte</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
