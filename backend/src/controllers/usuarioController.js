@@ -1,4 +1,5 @@
 const { Usuario } = require('../models');
+const bcrypt = require('bcrypt');
 
 // Obtener todos los usuarios
 const obtenerUsuarios = async (req, res) => {
@@ -42,17 +43,22 @@ const crearUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: 'El email ya está registrado' });
     }
     
+    // Hashear la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+    
     // Crear usuario
     const nuevoUsuario = await Usuario.create({
       nombre,
       apellido,
       email,
-      password_hash: password, // El hook beforeCreate se encargará de hashear la contraseña
-      rol
+      password_hash,
+      rol,
+      activo: true
     });
     
     // Excluir password_hash de la respuesta
-    const { password_hash, ...usuarioSinPassword } = nuevoUsuario.toJSON();
+    const { password_hash: _, ...usuarioSinPassword } = nuevoUsuario.toJSON();
     
     res.status(201).json(usuarioSinPassword);
   } catch (error) {
@@ -61,35 +67,32 @@ const crearUsuario = async (req, res) => {
   }
 };
 
-// Actualizar un usuario
+// Actualizar usuario
 const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, apellido, email, password, rol, activo } = req.body;
+    const { nombre, apellido, email, password, rol } = req.body;
     
-    // Verificar si el usuario existe
     const usuario = await Usuario.findByPk(id);
     if (!usuario) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
     
-    // Verificar si el email ya está en uso por otro usuario
-    if (email && email !== usuario.email) {
-      const emailExistente = await Usuario.findOne({ where: { email } });
-      if (emailExistente) {
-        return res.status(400).json({ mensaje: 'El email ya está registrado por otro usuario' });
-      }
+    // Preparar datos para actualizar
+    const datosActualizados = {
+      nombre,
+      apellido,
+      email,
+      rol
+    };
+    
+    // Si se proporciona una nueva contraseña, hashearla
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      datosActualizados.password_hash = await bcrypt.hash(password, salt);
     }
     
     // Actualizar usuario
-    const datosActualizados = {};
-    if (nombre) datosActualizados.nombre = nombre;
-    if (apellido) datosActualizados.apellido = apellido;
-    if (email) datosActualizados.email = email;
-    if (password) datosActualizados.password_hash = password;
-    if (rol) datosActualizados.rol = rol;
-    if (activo !== undefined) datosActualizados.activo = activo;
-    
     await usuario.update(datosActualizados);
     
     // Obtener usuario actualizado sin password_hash
@@ -109,7 +112,6 @@ const eliminarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Verificar si el usuario existe
     const usuario = await Usuario.findByPk(id);
     if (!usuario) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });

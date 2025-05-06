@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -24,6 +24,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
+  CircularProgress,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -31,48 +35,54 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-
-// Datos de ejemplo
-const productos = [
-  {
-    id: 1,
-    codigo: 'MED001',
-    nombre: 'Paracetamol 500mg',
-    categoria: 'Medicamentos',
-    stock: 100,
-    precio: 2.50,
-    estado: 'Activo',
-  },
-  {
-    id: 2,
-    codigo: 'MED002',
-    nombre: 'Ibuprofeno 400mg',
-    categoria: 'Medicamentos',
-    stock: 75,
-    precio: 3.20,
-    estado: 'Activo',
-  },
-  // Más productos...
-];
-
-const categorias = [
-  'Medicamentos',
-  'Insumos Médicos',
-  'Suplementos',
-  'Higiene Personal',
-];
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const Productos = () => {
+  const navigate = useNavigate();
+  const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [formData, setFormData] = useState({
-    codigo: '',
-    nombre: '',
-    categoria: '',
-    stock: '',
-    precio: '',
+  const [selectedEstado, setSelectedEstado] = useState('');
+  const [selectedCategoria, setSelectedCategoria] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    producto: null
   });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  // Cargar productos y categorías
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [productosRes, categoriasRes] = await Promise.all([
+        api.get('/productos'),
+        api.get('/categorias')
+      ]);
+      setProductos(productosRes.data);
+      setCategorias(categoriasRes.data);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al cargar los datos',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -83,34 +93,82 @@ const Productos = () => {
     setPage(0);
   };
 
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
+  const handleEstadoChange = (event) => {
+    setSelectedEstado(event.target.value);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setFormData({
-      codigo: '',
-      nombre: '',
-      categoria: '',
-      stock: '',
-      precio: '',
+  const handleCategoriaChange = (event) => {
+    setSelectedCategoria(event.target.value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Filtrar productos
+  const filteredProductos = productos.filter(producto => {
+    const matchesSearch = searchTerm === '' || 
+      producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.codigo.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategoria = selectedCategoria === '' || 
+      producto.id_categoria === parseInt(selectedCategoria);
+    
+    const matchesEstado = selectedEstado === '' || 
+      (selectedEstado === 'activo' ? producto.activo : !producto.activo);
+
+    return matchesSearch && matchesCategoria && matchesEstado;
+  });
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN'
+    }).format(value);
+  };
+
+  const handleDeleteClick = (producto) => {
+    setDeleteDialog({
+      open: true,
+      producto: producto
     });
   };
 
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialog({
+      open: false,
+      producto: null
+    });
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Aquí iría la lógica para guardar el producto
-    console.log('Producto a guardar:', formData);
-    handleCloseDialog();
+  const handleConfirmDelete = async () => {
+    try {
+      setLoading(true);
+      await api.delete(`/productos/${deleteDialog.producto.id}`);
+      
+      setSnackbar({
+        open: true,
+        message: 'Producto eliminado correctamente',
+        severity: 'success'
+      });
+      
+      // Recargar la lista de productos
+      fetchData();
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al eliminar el producto',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+      handleCloseDeleteDialog();
+    }
   };
 
   return (
@@ -126,7 +184,7 @@ const Productos = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={handleOpenDialog}
+            onClick={() => navigate('/productos/nuevo')}
           >
             Nuevo Producto
           </Button>
@@ -143,6 +201,8 @@ const Productos = () => {
                 size="small"
                 label="Buscar producto"
                 variant="outlined"
+                value={searchTerm}
+                onChange={handleSearchChange}
                 InputProps={{
                   endAdornment: <SearchIcon color="action" />,
                 }}
@@ -151,11 +211,15 @@ const Productos = () => {
             <Grid item xs={12} sm={4}>
               <FormControl fullWidth size="small">
                 <InputLabel>Categoría</InputLabel>
-                <Select label="Categoría">
+                <Select
+                  label="Categoría"
+                  value={selectedCategoria}
+                  onChange={handleCategoriaChange}
+                >
                   <MenuItem value="">Todas</MenuItem>
                   {categorias.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
+                    <MenuItem key={cat.id} value={cat.id}>
+                      {cat.nombre}
                     </MenuItem>
                   ))}
                 </Select>
@@ -164,7 +228,11 @@ const Productos = () => {
             <Grid item xs={12} sm={4}>
               <FormControl fullWidth size="small">
                 <InputLabel>Estado</InputLabel>
-                <Select label="Estado">
+                <Select
+                  label="Estado"
+                  value={selectedEstado}
+                  onChange={handleEstadoChange}
+                >
                   <MenuItem value="">Todos</MenuItem>
                   <MenuItem value="activo">Activo</MenuItem>
                   <MenuItem value="inactivo">Inactivo</MenuItem>
@@ -184,125 +252,101 @@ const Productos = () => {
               <TableCell>Nombre</TableCell>
               <TableCell>Categoría</TableCell>
               <TableCell align="right">Stock</TableCell>
-              <TableCell align="right">Precio</TableCell>
+              <TableCell align="right">Precio Venta</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {productos
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((producto) => (
-                <TableRow key={producto.id}>
-                  <TableCell>{producto.codigo}</TableCell>
-                  <TableCell>{producto.nombre}</TableCell>
-                  <TableCell>{producto.categoria}</TableCell>
-                  <TableCell align="right">{producto.stock}</TableCell>
-                  <TableCell align="right">S/ {producto.precio.toFixed(2)}</TableCell>
-                  <TableCell>{producto.estado}</TableCell>
-                  <TableCell align="center">
-                    <IconButton size="small" color="primary">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton size="small" color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : filteredProductos.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No se encontraron productos
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProductos
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((producto) => (
+                  <TableRow key={producto.id}>
+                    <TableCell>{producto.codigo}</TableCell>
+                    <TableCell>{producto.nombre}</TableCell>
+                    <TableCell>{producto.categoria?.nombre}</TableCell>
+                    <TableCell align="right">{producto.stock_actual}</TableCell>
+                    <TableCell align="right">{formatCurrency(producto.precio_venta)}</TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={producto.activo ? "Activo" : "Inactivo"}
+                        color={producto.activo ? "success" : "default"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => navigate(`/productos/editar/${producto.id}`)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteClick(producto)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+            )}
           </TableBody>
         </Table>
         <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={productos.length}
+          count={filteredProductos.length}
+          rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Filas por página"
         />
       </TableContainer>
 
-      {/* Diálogo para nuevo/editar producto */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <form onSubmit={handleSubmit}>
-          <DialogTitle>
-            {formData.id ? 'Editar Producto' : 'Nuevo Producto'}
-          </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Código"
-                  name="codigo"
-                  value={formData.codigo}
-                  onChange={handleFormChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Categoría</InputLabel>
-                  <Select
-                    name="categoria"
-                    value={formData.categoria}
-                    onChange={handleFormChange}
-                    label="Categoría"
-                  >
-                    {categorias.map((cat) => (
-                      <MenuItem key={cat} value={cat}>
-                        {cat}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Nombre"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleFormChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Stock"
-                  name="stock"
-                  type="number"
-                  value={formData.stock}
-                  onChange={handleFormChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Precio"
-                  name="precio"
-                  type="number"
-                  value={formData.precio}
-                  onChange={handleFormChange}
-                  required
-                  InputProps={{
-                    startAdornment: 'S/',
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancelar</Button>
-            <Button type="submit" variant="contained">
-              Guardar
-            </Button>
-          </DialogActions>
-        </form>
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          ¿Estás seguro de que deseas eliminar el producto "{deleteDialog.producto?.nombre}"?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancelar</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Eliminar
+          </Button>
+        </DialogActions>
       </Dialog>
+
+      {/* Snackbar para notificaciones */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

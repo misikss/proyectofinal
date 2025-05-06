@@ -7,23 +7,23 @@ const Venta = require('./Venta');
 const DetalleVenta = require('./DetalleVenta');
 
 // Definir relaciones
-Producto.belongsTo(Categoria, { foreignKey: 'id_categoria' });
-Categoria.hasMany(Producto, { foreignKey: 'id_categoria' });
+Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoria' });
+Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
 
-Producto.belongsTo(Proveedor, { foreignKey: 'id_proveedor' });
-Proveedor.hasMany(Producto, { foreignKey: 'id_proveedor' });
+Producto.belongsTo(Proveedor, { foreignKey: 'id_proveedor', as: 'proveedor' });
+Proveedor.hasMany(Producto, { foreignKey: 'id_proveedor', as: 'productos' });
 
-Venta.belongsTo(Cliente, { foreignKey: 'id_cliente' });
-Cliente.hasMany(Venta, { foreignKey: 'id_cliente' });
+Venta.belongsTo(Cliente, { foreignKey: 'id_cliente', as: 'cliente' });
+Cliente.hasMany(Venta, { foreignKey: 'id_cliente', as: 'ventas' });
 
-Venta.belongsTo(Usuario, { foreignKey: 'id_usuario' });
-Usuario.hasMany(Venta, { foreignKey: 'id_usuario' });
+Venta.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+Usuario.hasMany(Venta, { foreignKey: 'id_usuario', as: 'ventas' });
 
-DetalleVenta.belongsTo(Venta, { foreignKey: 'id_venta' });
-Venta.hasMany(DetalleVenta, { foreignKey: 'id_venta' });
+Venta.hasMany(DetalleVenta, { foreignKey: 'id_venta', as: 'detalles' });
+DetalleVenta.belongsTo(Venta, { foreignKey: 'id_venta', as: 'venta' });
 
-DetalleVenta.belongsTo(Producto, { foreignKey: 'id_producto' });
-Producto.hasMany(DetalleVenta, { foreignKey: 'id_producto' });
+DetalleVenta.belongsTo(Producto, { foreignKey: 'id_producto', as: 'producto' });
+Producto.hasMany(DetalleVenta, { foreignKey: 'id_producto', as: 'detalles_venta' });
 
 module.exports = {
   Usuario,

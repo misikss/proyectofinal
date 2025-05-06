@@ -32,7 +32,7 @@ const drawerWidth = 240;
 
 const MainLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { usuario, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,7 +42,7 @@ const MainLayout = () => {
     { text: 'Ventas', icon: <ShoppingCartIcon />, path: '/ventas' },
     { text: 'Clientes', icon: <PeopleIcon />, path: '/clientes' },
     { text: 'Proveedores', icon: <LocalShippingIcon />, path: '/proveedores' },
-    ...(usuario?.rol === 'administrador' ? [
+    ...(user?.rol === 'administrador' ? [
       { text: 'Usuarios', icon: <PersonIcon />, path: '/usuarios' }
     ] : [])
   ];
@@ -119,7 +119,7 @@ const MainLayout = () => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ mr: 2 }}>
-              {usuario?.nombre} {usuario?.apellido}
+              {user?.nombre} {user?.apellido}
             </Typography>
             <Button color="inherit" onClick={handleLogout}>
               Salir

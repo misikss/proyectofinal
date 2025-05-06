@@ -5,7 +5,6 @@ const { Op } = require('sequelize');
 const obtenerProductos = async (req, res) => {
   try {
     const productos = await Producto.findAll({
-      where: { activo: true },
       include: [
         { model: Categoria, as: 'categoria' },
         { model: Proveedor, as: 'proveedor' }
@@ -121,7 +120,8 @@ const crearProducto = async (req, res) => {
       stock_actual, 
       stock_minimo, 
       id_proveedor, 
-      fecha_vencimiento 
+      fecha_vencimiento,
+      activo 
     } = req.body;
     
     // Verificar si ya existe un producto con el mismo código
@@ -156,7 +156,7 @@ const crearProducto = async (req, res) => {
       stock_minimo: stock_minimo || 5,
       id_proveedor,
       fecha_vencimiento,
-      activo: true
+      activo: activo !== undefined ? activo : true
     });
     
     // Obtener producto con relaciones

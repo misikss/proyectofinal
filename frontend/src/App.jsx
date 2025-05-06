@@ -7,7 +7,10 @@ import { CircularProgress, Box } from '@mui/material';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Productos from './pages/Productos';
+import ProductosForm from './pages/productos/ProductosForm';
 import Ventas from './pages/Ventas';
+import NuevaVenta from './pages/ventas/NuevaVenta';
+import DetalleVenta from './pages/ventas/DetalleVenta';
 import Clientes from './pages/Clientes';
 import Proveedores from './pages/Proveedores';
 import Usuarios from './pages/Usuarios';
@@ -16,9 +19,9 @@ import Usuarios from './pages/Usuarios';
 import MainLayout from './layouts/MainLayout';
 
 const ProtectedRoute = ({ children, requiereAdmin = false }) => {
-  const { usuario, cargando } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (cargando) {
+  if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
@@ -26,11 +29,11 @@ const ProtectedRoute = ({ children, requiereAdmin = false }) => {
     );
   }
 
-  if (!usuario) {
+  if (!user) {
     return <Navigate to="/login" />;
   }
 
-  if (requiereAdmin && usuario.rol !== 'administrador') {
+  if (requiereAdmin && user.rol !== 'administrador') {
     return <Navigate to="/dashboard" />;
   }
 
@@ -38,9 +41,9 @@ const ProtectedRoute = ({ children, requiereAdmin = false }) => {
 };
 
 const App = () => {
-  const { cargando } = useAuth();
+  const { loading } = useAuth();
 
-  if (cargando) {
+  if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
@@ -60,7 +63,11 @@ const App = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="productos" element={<Productos />} />
+        <Route path="productos/nuevo" element={<ProductosForm />} />
+        <Route path="productos/editar/:id" element={<ProductosForm />} />
         <Route path="ventas" element={<Ventas />} />
+        <Route path="ventas/nueva" element={<NuevaVenta />} />
+        <Route path="ventas/:id" element={<DetalleVenta />} />
         <Route path="clientes" element={<Clientes />} />
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="usuarios" element={

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -8,6 +8,8 @@ import {
   CardContent,
   CardHeader,
   IconButton,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -25,18 +27,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import api from '../services/api';
 
-// Datos de ejemplo para el gráfico
-const data = [
-  { name: 'Ene', ventas: 4000 },
-  { name: 'Feb', ventas: 3000 },
-  { name: 'Mar', ventas: 2000 },
-  { name: 'Abr', ventas: 2780 },
-  { name: 'May', ventas: 1890 },
-  { name: 'Jun', ventas: 2390 },
-];
-
-const DashboardCard = ({ title, value, icon, color }) => (
+const DashboardCard = ({ title, value, icon, color, isLoading }) => (
   <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
       <Box
@@ -56,13 +49,71 @@ const DashboardCard = ({ title, value, icon, color }) => (
         {title}
       </Typography>
     </Box>
-    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-      {value}
-    </Typography>
+    {isLoading ? (
+      <CircularProgress size={24} />
+    ) : (
+      <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+        {value}
+      </Typography>
+    )}
   </Paper>
 );
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dashboardData, setDashboardData] = useState({
+    ventasTotales: 0,
+    totalClientes: 0,
+    totalProductos: 0,
+    totalPedidos: 0,
+    ventasMensuales: []
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [ventasRes, clientesRes, productosRes, ventasMensualesRes] = await Promise.all([
+          api.get('/dashboard/total'),
+          api.get('/dashboard/clientes'),
+          api.get('/dashboard/productos'),
+          api.get('/dashboard/mensuales')
+        ]);
+
+        setDashboardData({
+          ventasTotales: ventasRes.data.total || 0,
+          totalClientes: clientesRes.data.total || 0,
+          totalProductos: productosRes.data.total || 0,
+          totalPedidos: ventasRes.data.cantidad || 0,
+          ventasMensuales: ventasMensualesRes.data || []
+        });
+      } catch (error) {
+        console.error('Error al cargar datos del dashboard:', error);
+        setError('Error al cargar los datos del dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN'
+    }).format(value);
+  };
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        {error}
+      </Alert>
+    );
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={3}>
@@ -70,33 +121,37 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard
             title="Ventas Totales"
-            value="S/ 15,350"
+            value={formatCurrency(dashboardData.ventasTotales)}
             icon={<TrendingUpIcon />}
             color="#2196f3"
+            isLoading={loading}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard
             title="Clientes"
-            value="124"
+            value={dashboardData.totalClientes}
             icon={<PeopleIcon />}
             color="#4caf50"
+            isLoading={loading}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard
             title="Productos"
-            value="1,890"
+            value={dashboardData.totalProductos}
             icon={<InventoryIcon />}
             color="#ff9800"
+            isLoading={loading}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard
             title="Pedidos"
-            value="85"
+            value={dashboardData.totalPedidos}
             icon={<ShoppingCartIcon />}
             color="#f50057"
+            isLoading={loading}
           />
         </Grid>
 
@@ -113,28 +168,35 @@ const Dashboard = () => {
             />
             <CardContent>
               <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <LineChart
-                    data={data}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="ventas"
-                      stroke="#2196f3"
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {loading ? (
+                  <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <ResponsiveContainer>
+                    <LineChart
+                      data={dashboardData.ventasMensuales}
+                      margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="mes" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        name="Ventas"
+                        stroke="#2196f3"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </Box>
             </CardContent>
           </Card>

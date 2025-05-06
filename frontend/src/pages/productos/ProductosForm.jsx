@@ -183,6 +183,9 @@ const ProductosForm = () => {
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
+    if (snackbar.severity === 'success') {
+      navigate('/productos');
+    }
   };
 
   if (initialLoading) {
@@ -194,7 +197,7 @@ const ProductosForm = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3 }} tabIndex={-1}>
       <Typography variant="h4" gutterBottom>
         {isEditing ? 'Editar Producto' : 'Nuevo Producto'}
       </Typography>

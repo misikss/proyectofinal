@@ -1,4 +1,5 @@
-const { Venta, DetalleVenta, Producto, Cliente, Usuario, sequelize } = require('../models');
+const { Venta, DetalleVenta, Producto, Cliente, Usuario } = require('../models');
+const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
 // Obtener todas las ventas
@@ -103,9 +104,10 @@ const obtenerVenta = async (req, res) => {
 
 // Crear una nueva venta
 const crearVenta = async (req, res) => {
-  const t = await sequelize.transaction();
-  
+  let t;
   try {
+    t = await sequelize.transaction();
+    
     const { 
       id_cliente, 
       metodo_pago, 
@@ -118,7 +120,7 @@ const crearVenta = async (req, res) => {
     
     // Validar que haya detalles
     if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
-      await t.rollback();
+      if (t) await t.rollback();
       return res.status(400).json({ mensaje: 'La venta debe tener al menos un producto' });
     }
     
@@ -127,14 +129,14 @@ const crearVenta = async (req, res) => {
       const producto = await Producto.findByPk(detalle.id_producto, { transaction: t });
       
       if (!producto) {
-        await t.rollback();
+        if (t) await t.rollback();
         return res.status(404).json({ 
           mensaje: `Producto con ID ${detalle.id_producto} no encontrado` 
         });
       }
       
       if (producto.stock_actual < detalle.cantidad) {
-        await t.rollback();
+        if (t) await t.rollback();
         return res.status(400).json({ 
           mensaje: `Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock_actual}` 
         });
@@ -166,7 +168,7 @@ const crearVenta = async (req, res) => {
         subtotal: detalle.subtotal
       }, { transaction: t });
       
-      // Actualizar stock (esto también se maneja por el trigger en la base de datos)
+      // Actualizar stock
       await producto.update({
         stock_actual: producto.stock_actual - detalle.cantidad
       }, { transaction: t });
@@ -201,7 +203,7 @@ const crearVenta = async (req, res) => {
     
     res.status(201).json(ventaCompleta);
   } catch (error) {
-    await t.rollback();
+    if (t) await t.rollback();
     console.error('Error al crear venta:', error);
     res.status(500).json({ mensaje: 'Error en el servidor' });
   }
