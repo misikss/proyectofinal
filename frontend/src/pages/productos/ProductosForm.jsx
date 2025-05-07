@@ -27,6 +27,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from 'date-fns/locale';
 import api from '../../services/api';
+import { ProductosService } from '../../services/productos.service';
 
 const ProductosForm = () => {
   const { id } = useParams();
@@ -104,14 +105,14 @@ const ProductosForm = () => {
         setLoading(true);
         
         if (isEditing) {
-          await api.put(`/productos/${id}`, values);
+          await ProductosService.actualizar(id, values);
           setSnackbar({
             open: true,
             message: 'Producto actualizado correctamente',
             severity: 'success'
           });
         } else {
-          await api.post('/productos', values);
+          await ProductosService.crear(values);
           setSnackbar({
             open: true,
             message: 'Producto creado correctamente',
@@ -149,8 +150,7 @@ const ProductosForm = () => {
         
         // Si estamos editando, cargar datos del producto
         if (isEditing) {
-          const productoRes = await api.get(`/productos/${id}`);
-          const producto = productoRes.data;
+          const producto = await ProductosService.obtenerPorId(id);
           
           formik.setValues({
             codigo: producto.codigo,

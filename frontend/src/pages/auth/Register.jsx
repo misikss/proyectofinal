@@ -14,8 +14,8 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import authService from '../../services/authService';
+import { useAuth } from '../../../context/AuthContext';
+import authService from '../../../services/authService';
 
 // Esquema de validación
 const RegisterSchema = Yup.object().shape({

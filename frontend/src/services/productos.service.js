@@ -1,11 +1,12 @@
 import axios from 'axios';
+import api from './api';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://novasalud.onrender.com/api';
 
 export const ProductosService = {
   obtenerTodos: async (params = {}) => {
     try {
-      const response = await axios.get(`${API_URL}/productos`, { params });
+      const response = await api.get('/productos', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al obtener productos' };
@@ -14,7 +15,7 @@ export const ProductosService = {
 
   obtenerPorId: async (id) => {
     try {
-      const response = await axios.get(`${API_URL}/productos/${id}`);
+      const response = await api.get(`/productos/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al obtener el producto' };
@@ -23,7 +24,7 @@ export const ProductosService = {
 
   crear: async (producto) => {
     try {
-      const response = await axios.post(`${API_URL}/productos`, producto);
+      const response = await api.post('/productos', producto);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al crear el producto' };
@@ -32,7 +33,7 @@ export const ProductosService = {
 
   actualizar: async (id, producto) => {
     try {
-      const response = await axios.put(`${API_URL}/productos/${id}`, producto);
+      const response = await api.put(`/productos/${id}`, producto);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al actualizar el producto' };
@@ -41,7 +42,7 @@ export const ProductosService = {
 
   eliminar: async (id) => {
     try {
-      const response = await axios.delete(`${API_URL}/productos/${id}`);
+      const response = await api.delete(`/productos/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al eliminar el producto' };
@@ -50,7 +51,7 @@ export const ProductosService = {
 
   obtenerCategorias: async () => {
     try {
-      const response = await axios.get(`${API_URL}/categorias`);
+      const response = await api.get('/categorias');
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error al obtener categorías' };
@@ -59,7 +60,7 @@ export const ProductosService = {
 
   actualizarStock: async (id, cantidad, tipo = 'entrada') => {
     try {
-      const response = await axios.patch(`${API_URL}/productos/${id}/stock`, {
+      const response = await api.patch(`/productos/${id}/stock`, {
         cantidad,
         tipo
       });
@@ -71,7 +72,7 @@ export const ProductosService = {
 
   buscar: async (termino) => {
     try {
-      const response = await axios.get(`${API_URL}/productos/buscar`, {
+      const response = await api.get('/productos/buscar', {
         params: { q: termino }
       });
       return response.data;
@@ -79,4 +80,4 @@ export const ProductosService = {
       throw error.response?.data || { message: 'Error al buscar productos' };
     }
   }
-}; 
+};

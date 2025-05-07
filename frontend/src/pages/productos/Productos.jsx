@@ -36,7 +36,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../services/api';
+import { ProductosService } from '../../services/productos.service';
 
 const Productos = () => {
   const navigate = useNavigate();
@@ -66,11 +67,11 @@ const Productos = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [productosRes, categoriasRes] = await Promise.all([
-        api.get('/productos'),
+      const [productos, categoriasRes] = await Promise.all([
+        ProductosService.obtenerTodos(),
         api.get('/categorias')
       ]);
-      setProductos(productosRes.data);
+      setProductos(productos);
       setCategorias(categoriasRes.data);
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -148,7 +149,7 @@ const Productos = () => {
   const handleConfirmDelete = async () => {
     try {
       setLoading(true);
-      await api.delete(`/productos/${deleteDialog.producto.id}`);
+      await ProductosService.eliminar(deleteDialog.producto.id);
       
       setSnackbar({
         open: true,
@@ -351,4 +352,4 @@ const Productos = () => {
   );
 };
 
-export default Productos; 
+export default Productos;

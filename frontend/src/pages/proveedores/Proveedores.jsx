@@ -27,7 +27,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import api from '../services/api';
+import api from '../../services/api';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -331,4 +331,4 @@ const Proveedores = () => {
   );
 };
 
-export default Proveedores; 
+export default Proveedores;

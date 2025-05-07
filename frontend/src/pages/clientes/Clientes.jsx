@@ -30,7 +30,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import api from '../services/api';
+import api from '../../services/api';
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -321,4 +321,4 @@ const Clientes = () => {
   );
 };
 
-export default Clientes; 
+export default Clientes;

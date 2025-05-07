@@ -1,181 +1,208 @@
-# Nova Salud - Sistema de Gestión de Farmacia
-
-## Descripción
-Sistema de gestión integral para la farmacia Nova Salud, que permite administrar inventario, ventas, clientes y usuarios.
-
-## Enlaces de Producción
-- Frontend: https://proyectofinal-snowy.vercel.app
-- Backend: https://novasalud.onrender.com
-
-## Tecnologías Utilizadas
-
-### Frontend
-- React 18.x
-- Vite
-- Material-UI (MUI)
-- Axios
-- React Router DOM
-- Formik & Yup
-- Context API para manejo de estado
-
-### Backend
-- Node.js 18.x
-- Express 4.x
-- MySQL 8.0 (Railway)
-- Sequelize 6.x
-- JWT para autenticación
-- bcryptjs para encriptación
-- Winston para logging
+# Sistema de Gestión de Farmacia Nova Salud
+## Descripción General
+Este proyecto es un sistema completo de gestión para la botica Nova Salud, diseñado para administrar inventario, ventas, clientes, proveedores y más. El sistema está construido con una arquitectura moderna de frontend y backend separados.
 
 ## Estructura del Proyecto
-```
+plaintext
+
+Open Folder
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
 nova-salud/
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # Componentes reutilizables
-│   │   ├── context/      # Contextos de React (Auth, etc.)
-│   │   ├── hooks/        # Custom hooks
-│   │   ├── layouts/      # Layouts de la aplicación
-│   │   ├── pages/        # Páginas/Vistas
-│   │   ├── services/     # Servicios de API
-│   │   └── utils/        # Utilidades
-│   └── package.json
-├── backend/
-│   ├── src/
-│   │   ├── config/       # Configuraciones
-│   │   ├── controllers/  # Controladores
-│   │   ├── middleware/   # Middlewares
-│   │   ├── models/       # Modelos Sequelize
-│   │   ├── routes/       # Rutas de la API
-│   │   └── app.js        # Entrada principal
-│   └── package.json
-└── database/
-    └── script.sql        # Script de inicialización
-```
 
-## Características Principales
+├── frontend/               # Aplicación
 
-### Gestión de Usuarios
-- Roles: Administrador y Vendedor
-- Autenticación JWT
-- Refresh tokens
-- Perfiles de usuario
+cliente (React)
 
-### Gestión de Inventario
-- CRUD de productos
-- Control de stock
+│   ├── src/
+
+│   │   ├── components/     # Componentes
+
+reutilizables
+
+│   │   ├── context/        # Contextos
+
+de React (Auth, etc.)
+
+│   │   ├── hooks/          # Custom hooks
+
+│   │   ├── layouts/        # Layouts de
+
+la aplicación
+
+│   │   ├── pages/          # Páginas/
+
+Vistas organizadas por módulo
+
+│   │   ├── services/       # Servicios
+
+para comunicación con API
+
+│   │   └── utils/          # Utilidades
+
+y funciones auxiliares
+
+│   └── package.json        #
+
+Dependencias del frontend
+
+│
+
+├── backend/                # Servidor
+
+API (Node.js/Express)
+
+│   ├── src/
+
+│   │   ├── config/         #
+
+Configuraciones (base de datos, etc.)
+
+│   │   ├── controllers/    #
+
+Controladores para cada entidad
+
+│   │   ├── middleware/     # Middlewares
+
+(autenticación, etc.)
+
+│   │   ├── models/         # Modelos
+
+Sequelize
+
+│   │   ├── routes/         # Rutas de la
+
+API
+
+│   │   └── app.js          # Entrada
+
+principal
+
+│   └── package.json        #
+
+Dependencias del backend
+
+│
+
+└── database/
+
+└── script.sql          # Script de
+
+inicialización de la base de datos
+
+Fold
+
+## Tecnologías Utilizadas
+### Frontend
+- React : Biblioteca para construir interfaces de usuario
+- Material-UI : Framework de componentes para un diseño moderno
+- React Router : Navegación entre páginas
+- Axios : Cliente HTTP para comunicación con la API
+- Formik y Yup : Manejo y validación de formularios
+### Backend
+- Node.js : Entorno de ejecución para JavaScript
+- Express : Framework web para Node.js
+- Sequelize : ORM para interactuar con la base de datos
+- JWT : Autenticación basada en tokens
+- Swagger : Documentación de la API
+## Módulos Principales
+### 1. Autenticación y Usuarios
+- Sistema de login/logout
+- Gestión de permisos (administrador/vendedor)
+- Perfil de usuario
+### 2. Productos
+- Catálogo completo de productos
+- Gestión de stock
 - Alertas de stock bajo
 - Categorización de productos
+- Precios de compra y venta
+### 3. Ventas
+- Registro de nuevas ventas
+- Historial de ventas
+- Detalles de venta
+- Diferentes métodos de pago
+### 4. Clientes
+- Registro de clientes
+- Historial de compras por cliente
+- Información de contacto
+### 5. Proveedores
 - Gestión de proveedores
+- Productos asociados a cada proveedor
+### 6. Categorías
+- Organización de productos por categorías
+- Activación/desactivación de categorías
+### 7. Dashboard
+- Estadísticas de ventas
+- Productos más vendidos
+- Indicadores clave de rendimiento
+## Seguridad
+- Autenticación mediante JWT (JSON Web Tokens)
+- Refresh tokens para mantener la sesión
+- Roles y permisos diferenciados
+- Protección de rutas sensibles
+## API RESTful
+El backend proporciona una API RESTful completa con endpoints para todas las entidades del sistema:
 
-### Sistema de Ventas
-- Registro de ventas
-- Múltiples métodos de pago
-- Historial de transacciones
-- Gestión de clientes
+- Usuarios
+- Productos
+- Ventas
+- Clientes
+- Proveedores
+- Categorías
+## Instalación y Configuración
+### Requisitos Previos
+- Node.js (v14 o superior)
+- MySQL (v5.7 o superior)
+- npm o yarn
 
-### Seguridad
-- Autenticación JWT
-- Contraseñas hasheadas
-- Protección CORS
-- Validación de datos
-- Manejo de roles y permisos
-
-## Configuración del Proyecto
-
-### Variables de Entorno
-
-#### Backend (.env)
-```env
-NODE_ENV=production
-PORT=4000
-DB_HOST=your-railway-host
-DB_USER=your-railway-user
-DB_PASSWORD=your-railway-password
-DB_NAME=your-railway-database
-DB_PORT=your-railway-port
-JWT_SECRET=your-secret
-JWT_EXPIRES_IN=24h
-CORS_ORIGINS=https://proyectofinal-snowy.vercel.app
-```
-
-#### Frontend (.env)
-```env
-VITE_API_URL=https://novasalud.onrender.com/api
-```
-
-## Despliegue
-
-### Frontend (Vercel)
-1. Conectar con repositorio de GitHub
-2. Framework Preset: Vite
-3. Root Directory: ./frontend
-4. Build Command: npm run build
-5. Output Directory: dist
-6. Configurar variables de entorno:
-   - VITE_API_URL=https://novasalud.onrender.com/api
-
-### Backend (Render)
-1. Conectar con repositorio de GitHub
-2. Runtime: Node.js
-3. Build Command: npm install
-4. Start Command: npm start
-5. Configurar variables de entorno según .env
-6. Habilitar Auto-Deploy
-
-### Base de Datos (Railway)
-- MySQL 8.0
-- Configuración SSL habilitada
-- Conexión segura mediante variables de entorno
-
-## Acceso al Sistema
-
-### Credenciales por Defecto
-
-#### Administrador
-- Email: admin@novasalud.com
-- Contraseña: Admin123!
-
-## API Endpoints
-
-### Autenticación
-- POST /api/auth/login
-- POST /api/auth/refresh-token
-- GET /api/auth/perfil
-
-### Usuarios
-- GET /api/usuarios
-- POST /api/usuarios
-- PUT /api/usuarios/:id
-- DELETE /api/usuarios/:id
-
-### Productos
-- GET /api/productos
-- POST /api/productos
-- PUT /api/productos/:id
-- DELETE /api/productos/:id
-
-### Ventas
-- GET /api/ventas
-- POST /api/ventas
-- GET /api/ventas/:id
-- PATCH /api/ventas/:id/estado
-
-## Mantenimiento
-
-### Logs
-- Error logs: /backend/logs/error.log
-- Combined logs: /backend/logs/combined.log
-
-### Backups
-- Se recomienda backup diario de la base de datos
-- Exportar datos usando mysqldump
-
-## Soporte
-
-Para soporte y consultas:
-- Crear un issue en el repositorio
-- Contactar al equipo de desarrollo
-
-## Licencia
-ISC
+## Documentación Adicional
+- La API está documentada con Swagger y accesible en /api-docs
+- Cada módulo incluye validaciones de datos y manejo de errores
+- El sistema implementa prácticas de seguridad recomendadas
