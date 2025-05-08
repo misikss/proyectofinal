@@ -1,4 +1,4 @@
-const { Venta, Cliente, Producto } = require('../models');
+const { Venta, Cliente, Producto, DetalleVenta } = require('../models');
 const { sequelize } = require('../config/database');
 const { Op, fn, col, literal } = require('sequelize');
 
@@ -99,9 +99,75 @@ const obtenerVentasMensuales = async (req, res) => {
   }
 };
 
+// Obtener productos con stock bajo
+const obtenerProductosStockBajo = async (req, res) => {
+  try {
+    const productos = await Producto.findAll({
+      where: {
+        stock_actual: {
+          [Op.lte]: col('stock_minimo')
+        }
+      },
+      order: [['stock_actual', 'ASC']]
+    });
+
+    res.json(productos);
+  } catch (error) {
+    console.error('Error al obtener productos con stock bajo:', error);
+    res.status(500).json({ mensaje: 'Error en el servidor' });
+  }
+};
+
+// Obtener productos más vendidos
+const obtenerProductosMasVendidos = async (req, res) => {
+  try {
+    const limite = parseInt(req.query.limite) || 5;
+    
+    // Verificar si la tabla existe
+    const tableExists = await sequelize.getQueryInterface().showAllTables()
+      .then(tables => tables.includes('detalle_ventas'));
+    
+    if (!tableExists) {
+      console.log('La tabla detalle_ventas no existe');
+      return res.json([]);
+    }
+    
+    const productosMasVendidos = await DetalleVenta.findAll({
+      attributes: [
+        'id_producto',
+        [fn('SUM', col('cantidad')), 'cantidad_vendida'],
+        [fn('SUM', col('subtotal')), 'monto_total']
+      ],
+      include: [{
+        model: Producto,
+        attributes: ['nombre']
+      }],
+      group: ['id_producto', 'Producto.id', 'Producto.nombre'],
+      order: [[fn('SUM', col('cantidad')), 'DESC']],
+      limit: limite
+    });
+
+    const resultado = productosMasVendidos.map(detalle => ({
+      id: detalle.id_producto,
+      nombre: detalle.Producto.nombre,
+      cantidad_vendida: parseInt(detalle.getDataValue('cantidad_vendida')),
+      monto_total: parseFloat(detalle.getDataValue('monto_total'))
+    }));
+
+    res.json(resultado);
+  } catch (error) {
+    console.error('Error al obtener productos más vendidos:', error);
+    console.error('Detalles del error:', error);
+    // En caso de error, devolver un array vacío en lugar de un error 500
+    res.json([]);
+  }
+};
+
 module.exports = {
   obtenerTotalVentas,
   obtenerTotalClientes,
   obtenerTotalProductos,
-  obtenerVentasMensuales
+  obtenerVentasMensuales,
+  obtenerProductosStockBajo,
+  obtenerProductosMasVendidos
 }; 

@@ -25,7 +25,9 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  LineChart,
+  Line
 } from 'recharts';
 import {
   Inventory as InventoryIcon,
@@ -57,6 +59,16 @@ const Dashboard = () => {
         setLoading(true);
         setError(null);
         
+        // Verificar si hay token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No hay sesión activa. Por favor, inicie sesión.');
+          navigate('/login');
+          return;
+        }
+
+        console.log('Token:', token);
+        
         // Obtener datos del dashboard
         const [
           ventasHoyRes,
@@ -66,37 +78,59 @@ const Dashboard = () => {
           ventasPorDiaRes,
           productosMasVendidosRes
         ] = await Promise.all([
-          api.get('/ventas/reportes/diario'),
-          api.get('/ventas/reportes/mensual'),
-          api.get('/productos?limite=1'),
-          api.get('/productos/stock-bajo'),
-          api.get('/ventas/reportes/mensual'),
-          api.get('/ventas/reportes/productos-mas-vendidos?limite=5')
+          api.get('/dashboard/total'),
+          api.get('/dashboard/mensuales'),
+          api.get('/dashboard/productos'),
+          api.get('/dashboard/productos/stock-bajo'),
+          api.get('/dashboard/mensuales'),
+          api.get('/dashboard/productos-mas-vendidos?limite=5')
         ]);
         
+        console.log('Respuestas:', {
+          ventasHoy: ventasHoyRes.data,
+          ventasMes: ventasMesRes.data,
+          productos: productosRes.data,
+          stockBajo: stockBajoRes.data,
+          ventasPorDia: ventasPorDiaRes.data,
+          productosMasVendidos: productosMasVendidosRes.data
+        });
+        
         setDashboardData({
-          ventasHoy: ventasHoyRes.data.montoTotal || 0,
-          ventasMes: ventasMesRes.data.montoTotal || 0,
-          productosTotal: productosRes.data.meta?.total_registros || 0,
+          ventasHoy: ventasHoyRes.data.total || 0,
+          ventasMes: ventasMesRes.data[ventasMesRes.data.length - 1]?.total || 0,
+          productosTotal: productosRes.data.total || 0,
           productosStockBajo: stockBajoRes.data || [],
-          ventasPorDia: ventasPorDiaRes.data.ventasPorDia ? 
-            Object.entries(ventasPorDiaRes.data.ventasPorDia).map(([dia, datos]) => ({
-              dia: parseInt(dia),
-              ventas: datos.cantidad,
-              monto: datos.monto
-            })) : [],
+          ventasPorDia: ventasPorDiaRes.data.map(item => ({
+            dia: new Date(item.mes).getDate(),
+            ventas: item.total,
+            monto: item.total
+          })),
           productosMasVendidos: productosMasVendidosRes.data || []
         });
       } catch (err) {
         console.error('Error al cargar datos del dashboard:', err);
-        setError('Error al cargar los datos del dashboard. Por favor, intente nuevamente.');
+        console.error('Detalles del error:', {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data,
+          headers: err.response?.headers
+        });
+        
+        if (err.response?.status === 401) {
+          setError('La sesión ha expirado. Por favor, inicie sesión nuevamente.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          navigate('/login');
+        } else {
+          setError(`Error al cargar los datos del dashboard: ${err.message}`);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   // Colores para gráficos
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -206,7 +240,7 @@ const Dashboard = () => {
               Ventas por Día (Mes Actual)
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart
+              <LineChart
                 data={dashboardData.ventasPorDia}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
@@ -215,8 +249,14 @@ const Dashboard = () => {
                 <YAxis />
                 <Tooltip formatter={(value) => formatCurrency(value)} />
                 <Legend />
-                <Bar dataKey="monto" name="Monto de Ventas" fill="#8884d8" />
-              </BarChart>
+                <Line 
+                  type="monotone" 
+                  dataKey="monto" 
+                  name="Monto de Ventas" 
+                  stroke="#8884d8" 
+                  activeDot={{ r: 8 }}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
@@ -326,17 +366,10 @@ const Dashboard = () => {
           Nueva Venta
         </Button>
         <Button 
-          variant="contained" 
-          color="secondary"
-          onClick={() => navigate('/inventario')}
-        >
-          Gestionar Inventario
-        </Button>
-        <Button 
           variant="outlined"
-          onClick={() => navigate('/reportes')}
+          onClick={() => navigate('/ventas')}
         >
-          Ver Reportes
+          Ver Ventas
         </Button>
       </Box>
     </Box>

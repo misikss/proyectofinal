@@ -13,7 +13,7 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Link as RouterLink } from 'react-router-dom';
-import authService from '../../services/authService';
+import authService from '../../../services/authService';
 
 // Esquema de validación
 const ForgotPasswordSchema = Yup.object().shape({

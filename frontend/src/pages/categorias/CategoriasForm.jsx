@@ -13,7 +13,7 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate, useParams } from 'react-router-dom';
-import categoriasService from '../../services/categoriasService';
+import categoriasService from '../../../services/categoriasService';
 
 // Esquema de validación
 const CategoriaSchema = Yup.object().shape({

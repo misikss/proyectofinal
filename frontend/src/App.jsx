@@ -5,15 +5,15 @@ import { CircularProgress, Box } from '@mui/material';
 
 // Páginas
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Productos from './pages/Productos';
+import Dashboard from './pages/dashboard/Dashboard';
+import Productos from './pages/productos/Productos';
 import ProductosForm from './pages/productos/ProductosForm';
-import Ventas from './pages/Ventas';
+import Ventas from './pages/ventas/Ventas';
 import NuevaVenta from './pages/ventas/NuevaVenta';
 import DetalleVenta from './pages/ventas/DetalleVenta';
-import Clientes from './pages/Clientes';
-import Proveedores from './pages/Proveedores';
-import Usuarios from './pages/Usuarios';
+import Clientes from './pages/clientes/Clientes';
+import Proveedores from './pages/proveedores/Proveedores';
+import Usuarios from './pages/usuarios/Usuarios';
 
 // Layouts
 import MainLayout from './layouts/MainLayout';

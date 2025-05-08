@@ -2,34 +2,35 @@ const jwt = require('jsonwebtoken');
 const { Usuario } = require('../models');
 
 // Middleware para verificar token JWT
-const verificarToken = async (req, res, next) => {
+const verificarToken = (req, res, next) => {
   try {
-    // Obtener token del header
+    console.log('[Auth] Verificando token...');
+    console.log('[Auth] Headers:', req.headers);
+
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ mensaje: 'No hay token, autorización denegada' });
+    if (!authHeader) {
+      console.log('[Auth] No se encontró el header de autorización');
+      return res.status(401).json({ mensaje: 'No se proporcionó token de autenticación' });
     }
 
     const token = authHeader.split(' ')[1];
-
-    // Verificar token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Buscar usuario
-    const usuario = await Usuario.findByPk(decoded.id);
-    if (!usuario || !usuario.activo) {
-      return res.status(401).json({ mensaje: 'Token no válido o usuario inactivo' });
+    if (!token) {
+      console.log('[Auth] Token no encontrado en el header');
+      return res.status(401).json({ mensaje: 'Token no encontrado' });
     }
 
-    // Agregar usuario al request
-    req.usuario = decoded;
-    next();
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.usuario = decoded;
+      console.log('[Auth] Token verificado correctamente para usuario:', decoded.id);
+      next();
+    } catch (error) {
+      console.log('[Auth] Error al verificar token:', error.message);
+      return res.status(401).json({ mensaje: 'Token inválido' });
+    }
   } catch (error) {
-    console.error('Error en verificarToken:', error);
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(401).json({ mensaje: 'Token inválido o expirado' });
-    }
-    res.status(500).json({ mensaje: 'Error en el servidor' });
+    console.error('[Auth] Error en middleware de autenticación:', error);
+    res.status(500).json({ mensaje: 'Error en la autenticación' });
   }
 };
 
