@@ -5,6 +5,9 @@ const { Op } = require('sequelize');
 // Obtener todas las ventas
 const obtenerVentas = async (req, res) => {
   try {
+    console.log('Obteniendo ventas...');
+    console.log('Usuario:', req.usuario);
+    
     const { desde, hasta, estado } = req.query;
     
     // Construir condiciones de búsqueda
@@ -33,6 +36,8 @@ const obtenerVentas = async (req, res) => {
       where.id_usuario = req.usuario.id;
     }
     
+    console.log('Condiciones de búsqueda:', where);
+    
     const ventas = await Venta.findAll({
       where,
       include: [
@@ -50,10 +55,16 @@ const obtenerVentas = async (req, res) => {
       order: [['fecha', 'DESC']]
     });
     
+    console.log(`Se encontraron ${ventas.length} ventas`);
     res.json(ventas);
   } catch (error) {
     console.error('Error al obtener ventas:', error);
-    res.status(500).json({ mensaje: 'Error en el servidor' });
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      mensaje: 'Error en el servidor',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

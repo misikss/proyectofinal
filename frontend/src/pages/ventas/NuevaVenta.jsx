@@ -62,7 +62,9 @@ const NuevaVenta = () => {
       return;
     }
 
+    const precio = parseFloat(productoSeleccionado.precio_venta);
     const itemExistente = items.find(item => item.productoId === productoSeleccionado.id);
+    
     if (itemExistente) {
       const nuevaCantidad = itemExistente.cantidad + cantidad;
       if (nuevaCantidad > productoSeleccionado.stock_actual) {
@@ -75,7 +77,8 @@ const NuevaVenta = () => {
           ? {
               ...item,
               cantidad: nuevaCantidad,
-              subtotal: nuevaCantidad * productoSeleccionado.precio_venta
+              precio: precio,
+              subtotal: nuevaCantidad * precio
             }
           : item
       ));
@@ -84,8 +87,8 @@ const NuevaVenta = () => {
         productoId: productoSeleccionado.id,
         nombre: productoSeleccionado.nombre,
         cantidad: cantidad,
-        precio: productoSeleccionado.precio_venta,
-        subtotal: cantidad * productoSeleccionado.precio_venta
+        precio: precio,
+        subtotal: cantidad * precio
       }]);
     }
 
@@ -221,8 +224,8 @@ const NuevaVenta = () => {
                 <TableRow key={item.productoId}>
                   <TableCell>{item.nombre}</TableCell>
                   <TableCell align="right">{item.cantidad}</TableCell>
-                  <TableCell align="right">S/ {item.precio.toFixed(2)}</TableCell>
-                  <TableCell align="right">S/ {item.subtotal.toFixed(2)}</TableCell>
+                  <TableCell align="right">${parseFloat(item.precio).toFixed(2)}</TableCell>
+                  <TableCell align="right">${parseFloat(item.subtotal).toFixed(2)}</TableCell>
                   <TableCell align="right">
                     <IconButton
                       color="error"
